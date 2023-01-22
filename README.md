@@ -23,7 +23,7 @@ Opis
 
 - Właściciel dodaje klienta
 
-! Właścicel wypożyczalni ma możliwość dodania, edytowania bądź usunięcia sprzętu oraz zobaczenia zawartości tabeli ze sprzętem i szczegółami wypożyczeń
++ Właścicel wypożyczalni ma możliwość dodania, edytowania bądź usunięcia sprzętu oraz zobaczenia zawartości tabeli ze sprzętem i szczegółami wypożyczeń
    
 + Klient ma możliwość wypożyczenia sprzętu, oddania go, zobaczenia swoich wypożyczeń oraz dobrania odpowiednich nart
   
