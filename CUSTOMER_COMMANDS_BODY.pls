@@ -52,37 +52,29 @@ PACKAGE BODY CUSTOMER_COMMANDS AS
         DBMS_OUTPUT.PUT_LINE('Equipment not found');
   END RENT_SKI;
 
-  PROCEDURE RETURN_SKI(
+PROCEDURE RETURN_SKI(
     rent_id number,
-    new_return_date date
+    return_date date
 ) AS
     rented rented_id_type;
     single_price number;
     payment number := 0;
-    days_rented number;
-    temp_date date;
   BEGIN   
-    select rented_ids into rented from rentals where rental_id = rent_id;
+    select rented_ids into rented from rentals where rentals.rental_id = rent_id;
     for i in 1..rented.count loop
         update eq_tab set rent='N' where id=rented(i);
         select price into single_price from eq_tab where eq_tab.id=rented(i);
         payment := payment + single_price;
     end loop;
     
-    select rental_start_date into temp_date from rentals where rental_id = rent_id;
-    days_rented := ROUND(new_return_date,'DD') - ROUND(temp_date,'DD');
-    payment := payment * days_rented;
-    select rental_end_date - rental_start_date into days_rented from rentals where rental_id = rent_id;
-    if days_rented < ROUND(new_return_date,'DD') - ROUND(temp_date,'DD') then
-        payment := payment * 2;
-    end if;
-    
-    update rentals set return_date=new_return_date where rental_id=rent_id;
+    update rentals set rental_end_date=return_date where rental_id=rentals.rental_id;
     dbms_output.put_line('Owing: ' || payment);
   EXCEPTION
     WHEN NO_DATA_FOUND THEN
         DBMS_OUTPUT.PUT_LINE('Rental details not found');
   END RETURN_SKI;
+
+
 
   PROCEDURE VIEW_RENTALS(
     search_customer_id number
