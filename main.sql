@@ -147,9 +147,9 @@ alter table eq_tab add constraint check_rent check (rent LIKE 'Y' OR rent LIKE '
 CREATE SEQUENCE seq_eq INCREMENT BY 1 START WITH 1;
 
 -- exaple inserts
-insert into eq_tab values(ski_t(10, '4FRNT', 100, 'N', 230, 'allride'));
-insert into eq_tab values(helmet_t(11, 'Smith Vantage MIPS', 20, 'N', 15));
-insert into eq_tab values(boots_t(12, 'Fischer', 10, 'N', 46));
+insert into eq_tab values(ski_t(0, '4FRNT', 100, 'N', 230, 'allride'));
+insert into eq_tab values(helmet_t(1, 'Smith Vantage MIPS', 20, 'N', 15));
+insert into eq_tab values(boots_t(2, 'Fischer', 10, 'N', 46));
 
 -- example selects
 select * from eq_tab;

@@ -62,12 +62,15 @@ PROCEDURE RETURN_SKI(
   BEGIN   
     select rented_ids into rented from rentals where rentals.rental_id = rent_id;
     for i in 1..rented.count loop
-        update eq_tab set rent='N' where id=rented(i);
-        select price into single_price from eq_tab where eq_tab.id=rented(i);
-        payment := payment + single_price;
+        if rented(i) is not null then
+            update eq_tab set rent='N' where id=rented(i);
+            select price into single_price from eq_tab where eq_tab.id=rented(i);
+            payment := payment + single_price;
+        end if;
     end loop;
-    
-    update rentals set rental_end_date=return_date where rental_id=rentals.rental_id;
+
+    --update rentals set rental_end_date=return_date where rentals.rental_id=rent_id;
+    delete from rentals where rentals.rental_id=rent_id;
     dbms_output.put_line('Owing: ' || payment);
   EXCEPTION
     WHEN NO_DATA_FOUND THEN
