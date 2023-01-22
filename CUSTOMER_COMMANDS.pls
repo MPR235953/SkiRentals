@@ -13,11 +13,11 @@ PROCEDURE RENT_SKI(
 
 PROCEDURE RETURN_SKI(
     rent_id number,
-    return_date date
+    new_return_date date
 );
 
 PROCEDURE VIEW_RENTALS(
-    cust_id number
+    search_customer_id number
 );
 
 PROCEDURE SEARCH_SKIS(

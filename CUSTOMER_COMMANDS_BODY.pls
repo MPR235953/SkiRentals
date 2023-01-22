@@ -12,24 +12,37 @@ PACKAGE BODY CUSTOMER_COMMANDS AS
     is_rented char := 'Y';
     rented_exception EXCEPTION;
   BEGIN
-     select rent into is_rented from eq_tab where id=ski_id;
-     if is_rented = 'Y' then
-        RAISE rented_exception;
+     if ski_id is not null then
+         select rent into is_rented from eq_tab where id=ski_id;
+         if is_rented = 'Y' then
+            RAISE rented_exception;
+        end if;
      end if;
-     select rent into is_rented from eq_tab where id=boots_id;
-     if is_rented = 'Y' then
-        RAISE rented_exception;
+     if boots_id is not null then
+         select rent into is_rented from eq_tab where id=boots_id;
+         if is_rented = 'Y' then
+            RAISE rented_exception;
+         end if;
      end if;
-     select rent into is_rented from eq_tab where id=helmet_id;
-     if is_rented = 'Y' then
-        RAISE rented_exception;
+     if helmet_id is not null then
+         select rent into is_rented from eq_tab where id=helmet_id;
+         if is_rented = 'Y' then
+            RAISE rented_exception;
+         end if;
      end if;
      
-     update eq_tab set rent='Y' where id=ski_id;
-     update eq_tab set rent='Y' where id=boots_id;
-     update eq_tab set rent='Y' where id=helmet_id;
      
-     insert into rentals values(seq_rentals.nextval, customer_id, rented_id_type(ski_id, boots_id, helmet_id), rental_start_date, rental_end_date);
+     if ski_id is not null then
+        update eq_tab set rent='Y' where id=ski_id;
+     end if;
+     if boots_id is not null then
+        update eq_tab set rent='Y' where id=boots_id;
+     end if;
+     if helmet_id is not null then
+        update eq_tab set rent='Y' where id=helmet_id;
+     end if;
+
+     insert into rentals values(seq_rentals.nextval, customer_id, rented_id_type(ski_id, boots_id, helmet_id), rental_start_date, rental_end_date, null);
      DBMS_OUTPUT.PUT_LINE('Equipment successfully rented');
   EXCEPTION  
     WHEN rented_exception THEN
@@ -41,20 +54,30 @@ PACKAGE BODY CUSTOMER_COMMANDS AS
 
   PROCEDURE RETURN_SKI(
     rent_id number,
-    return_date date
+    new_return_date date
 ) AS
     rented rented_id_type;
     single_price number;
     payment number := 0;
+    days_rented number;
+    temp_date date;
   BEGIN   
-    select rented_ids into rented from rentals where rentals.rental_id = rent_id;
+    select rented_ids into rented from rentals where rental_id = rent_id;
     for i in 1..rented.count loop
         update eq_tab set rent='N' where id=rented(i);
         select price into single_price from eq_tab where eq_tab.id=rented(i);
         payment := payment + single_price;
     end loop;
     
-    update rentals set rental_end_date=return_date where rental_id=rentals.rental_id;
+    select rental_start_date into temp_date from rentals where rental_id = rent_id;
+    days_rented := ROUND(new_return_date,'DD') - ROUND(temp_date,'DD');
+    payment := payment * days_rented;
+    select rental_end_date - rental_start_date into days_rented from rentals where rental_id = rent_id;
+    if days_rented < ROUND(new_return_date,'DD') - ROUND(temp_date,'DD') then
+        payment := payment * 2;
+    end if;
+    
+    update rentals set return_date=new_return_date where rental_id=rent_id;
     dbms_output.put_line('Owing: ' || payment);
   EXCEPTION
     WHEN NO_DATA_FOUND THEN
@@ -62,25 +85,34 @@ PACKAGE BODY CUSTOMER_COMMANDS AS
   END RETURN_SKI;
 
   PROCEDURE VIEW_RENTALS(
-    cust_id number
+    search_customer_id number
 ) 
 AS
-  cursor cur is select rental_id, customer_id, rented_ids, rental_start_date, rental_end_date 
-  from rentals r where r.customer_id = cust_id;
+    rent_id number;
+    cust_id number;
+    rent_ids rented_id_type;
+    s_date date;
+    e_date date;
+    cur cur_type;
   BEGIN
-    for c in cur
-    loop
-        dbms_output.put_line('rental id: ' || c.rental_id);
-        dbms_output.put_line('customer id: ' || c.customer_id);
-        dbms_output.put('list of rentals: ');
-        for i in c.rented_ids.first..c.rented_ids.last loop
-            dbms_output.put(c.rented_ids(i) || ' ');
+    open cur for select rental_id, customer_id, rented_ids, rental_start_date, rental_end_date from rentals;
+        loop
+            fetch cur into rent_id, cust_id, rent_ids, s_date, e_date;
+            exit when cur%notfound;
+            if cust_id = search_customer_id then
+                dbms_output.put_line('rental id: ' || rent_id);
+                dbms_output.put_line('customer id: ' || cust_id);
+                dbms_output.put('list of rentals: ');
+                for i in rent_ids.first..rent_ids.last loop
+                    dbms_output.put(rent_ids(i) || ' ');
+                end loop;
+                dbms_output.put_line('');
+                dbms_output.put_line('start date: ' || s_date);
+                dbms_output.put_line('end date: ' || e_date);
+                dbms_output.put_line('');
+            end if;
         end loop;
-        dbms_output.put_line('');
-        dbms_output.put_line('start date: ' || c.rental_start_date);
-        dbms_output.put_line('end date: ' || c.rental_end_date);
-        dbms_output.put_line('');
-    end loop;
+    close cur;
   END VIEW_RENTALS;
 
   PROCEDURE SEARCH_SKIS(

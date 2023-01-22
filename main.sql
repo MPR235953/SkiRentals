@@ -194,7 +194,8 @@ create table rentals(
         REFERENCES customers(customer_id),
     rented_ids rented_id_type,
     rental_start_date date,
-    rental_end_date date
+    rental_end_date date,
+    return_date date
 );
 
 begin
@@ -217,13 +218,13 @@ end;
 
 begin
     CUSTOMER_COMMANDS.VIEW_RENTALS(
-        cust_id => 1); 
+        search_customer_id => 1); 
 end;
 
 begin
     CUSTOMER_COMMANDS.RETURN_SKI(
         rent_id => 1,
-        return_date => sysdate);
+        new_return_date => sysdate);
 end;
 
 select eq.show() from eq_tab eq where eq.get_type() = 'ski';
