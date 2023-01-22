@@ -147,9 +147,9 @@ alter table eq_tab add constraint check_rent check (rent LIKE 'Y' OR rent LIKE '
 CREATE SEQUENCE seq_eq INCREMENT BY 1 START WITH 1;
 
 -- exaple inserts
-insert into eq_tab values(ski_t(0, '4FRNT', 100, 'N', 230, 'allride'));
-insert into eq_tab values(helmet_t(1, 'Smith Vantage MIPS', 20, 'Y', 15));
-insert into eq_tab values(boots_t(2, 'Fischer', 10, 'N', 46));
+insert into eq_tab values(ski_t(10, '4FRNT', 100, 'N', 230, 'allride'));
+insert into eq_tab values(helmet_t(11, 'Smith Vantage MIPS', 20, 'N', 15));
+insert into eq_tab values(boots_t(12, 'Fischer', 10, 'N', 46));
 
 -- example selects
 select * from eq_tab;
@@ -210,8 +210,8 @@ begin
     CUSTOMER_COMMANDS.RENT_SKI(
         customer_id => 1,
         ski_id => 0,
-        boots_id => 1,
-        helmet_id => 2,
+        boots_id => 2,
+        helmet_id => null,
         rental_start_date => sysdate,
         rental_end_date => sysdate);
 end;
@@ -224,7 +224,7 @@ end;
 begin
     CUSTOMER_COMMANDS.RETURN_SKI(
         rent_id => 1,
-        new_return_date => sysdate);
+        return_date => sysdate);
 end;
 
 select eq.show() from eq_tab eq where eq.get_type() = 'ski';
